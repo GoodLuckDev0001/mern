@@ -146,6 +146,14 @@ export interface AdditionalInfo {
   supportingDocuments: File | null;
 }
 
+export interface RiskProfile {
+  clientName: string;
+  date: string;
+  isForeignPEP: boolean;
+  isDomesticPEP: boolean;
+  isHighRisk: boolean;
+}
+
 interface FormState {
   currentStep: number;
   finishFlag: boolean;
@@ -164,6 +172,7 @@ interface FormState {
   termsInfo: TermsInfo;
   verificationInfo: VerificationInfo;
   additionalInfo: AdditionalInfo;
+  riskProfile: RiskProfile;
 }
 
 const initialState: FormState = {
@@ -260,6 +269,13 @@ const initialState: FormState = {
     businessPlan: null,
     licensesPermits: null,
     supportingDocuments: null,
+  },
+  riskProfile: {
+    clientName: '',
+    date: '',
+    isForeignPEP: false,
+    isDomesticPEP: false,
+    isHighRisk: false,
   },
 }
 

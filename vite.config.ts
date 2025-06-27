@@ -10,7 +10,7 @@ export default defineConfig({
     port: 5173, // optional: you can set a fixed port if needed
     proxy: {
       '/api': {
-        target: 'https://mern-b-voye.onrender.com',
+        target: 'https://localhost:3443', // replace with your backend URL
         changeOrigin: true,
         secure: false,
       },

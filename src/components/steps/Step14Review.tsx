@@ -5,6 +5,17 @@ import type { RootState } from '../../store';
 import { setCurrentStep } from '../../store/slices/formSlice';
 import { useTranslation } from '../../hooks/useTranslation';
 
+// Mapping function for risk profile template
+function mapRiskProfileToPlaceholders(riskProfile: any) {
+  return {
+    Text10: riskProfile.clientName,
+    Text8: riskProfile.date,
+    Kontrollkästchen1: riskProfile.isForeignPEP ? 'true' : 'false',
+    Kontrollkästchen2: riskProfile.isDomesticPEP ? 'true' : 'false',
+    // Add more mappings as needed
+  };
+}
+
 export const Step14Review: React.FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -23,28 +34,93 @@ export const Step14Review: React.FC = () => {
 
     // Create a deep copy to avoid modifying the Redux state directly
     const stateToSubmit = JSON.parse(JSON.stringify(formState));
+    console.log("stateToSubmit💖💖💖", stateToSubmit);
+    
+    // Example: Only generate risk profile PDF if user is high risk (replace with your real condition)
+    const needsRiskProfile = formState.riskProfile && formState.riskProfile.isHighRisk;
+
+    if (needsRiskProfile) {
+      const riskData = mapRiskProfileToPlaceholders(formState.riskProfile);
+      const riskFormData = new FormData();
+      riskFormData.append('template', '902.4e');
+      Object.entries(riskData).forEach(([key, value]) => {
+        riskFormData.append(key, value);
+      });
+      try {
+        const response = await fetch('/api/submit', {
+          method: 'POST',
+          body: riskFormData,
+        });
+        if (response.ok) {
+          setSubmitStatus('success');
+          toast.success('Risk Profile PDF generated successfully!');
+        } else {
+          const errorData = await response.json();
+          toast.error(errorData.message || 'Error generating Risk Profile PDF.');
+          setSubmitStatus('error');
+        }
+      } catch (error) {
+        toast.error('Unexpected error generating Risk Profile PDF.');
+        setSubmitStatus('error');
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
 
     // The backend expects multipart/form-data, so we send the whole state as a JSON string
     // This is simpler than appending each field, especially for nested objects and arrays.
     // The backend can then parse this string back into an object.
     const formData = new FormData();
-    formData.append('formState', JSON.stringify(stateToSubmit));
-
-    // Append files separately. The key here must match the 'field' in Step13.
-    if (formState.additionalInfo.financialStatements) {
-      formData.append('financialStatements', formState.additionalInfo.financialStatements);
-    }
-    if (formState.additionalInfo.businessPlan) {
-      formData.append('businessPlan', formState.additionalInfo.businessPlan);
-    }
-    if (formState.additionalInfo.licensesPermits) {
-      formData.append('licensesPermits', formState.additionalInfo.licensesPermits);
-    }
-    if (formState.additionalInfo.supportingDocuments) {
-      formData.append('supportingDocuments', formState.additionalInfo.supportingDocuments);
-    }
-
-    console.log('Submitting FormData...');
+    const today = new Date();
+    const formattedDate = `${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()}`;
+    formData.append('5', formattedDate);
+    formData.append('6', formState.companyInfo.name);
+    formData.append('7', formState.companyInfo.address);
+    formData.append('8', formState.companyInfo.phone);
+    formData.append('9', formState.companyInfo.email);
+    formData.append('10', '  ');
+    formData.append('11', ' ');
+    formData.append('12', ' ');
+    formData.append('12:1', formState.entityInfo.registerFile === null ? 'false' : 'true');
+    formData.append('13', formState.companyInfo.name);
+    formData.append('14', formState.companyInfo.address);
+    formData.append('15', ' ');
+    formData.append('15:1', formState.entityInfo.articlesFile === null ? 'false' : 'true');
+    formData.append('16', formState.companyInfo.name);
+    formData.append('17', formState.companyInfo.canton + ' ' + formState.companyInfo.city + ' ' + formState.companyInfo.address + ' ' + formState.companyInfo.postal);
+    formData.append('18', ' ');
+    formData.append('19', formState.companyInfo.phone);
+    formData.append('20', formState.companyInfo.email);
+    formData.append('21', ' ');
+    formData.append('23', formState.establishingPersons[0].name);
+    formData.append('24', formState.establishingPersons[0].address);
+    formData.append('25', formState.establishingPersons[0].dob);
+    formData.append('26', formState.establishingPersons[0].nationality);
+    formData.append('27', formState.establishingPersons[0].toa);
+    formData.append('28', formState.establishingPersons[0].iddoc === null ? 'false' : 'true');
+    formData.append('29', ' ');
+    formData.append('29:1', 'false');
+    formData.append('29:2', 'false');
+    formData.append('29:3', formState.establishingPersons[0].poa === null ? 'false' : 'true');
+    formData.append('31', ' ');
+    formData.append('31:1', 'false');
+    formData.append('31:2', 'true');
+    formData.append('31:3', 'false');
+    formData.append('31:4', 'false');
+    formData.append('32', ' ');
+    formData.append('32:1', 'false');
+    formData.append('32:2', 'false');
+    formData.append('32:3', 'false');
+    formData.append('32:4', 'true');
+    formData.append('34', 'No information');
+    formData.append('35:5', 'false');
+    formData.append('35:1', 'true');
+    formData.append('35:2', 'false');
+    formData.append('35:3', 'false');
+    formData.append('35:4', 'false');
+    formData.append('36', 'false');
+    formData.append('39', formState.transactionInfo.businessPurposes[0]);
 
     try {
       const response = await fetch('/api/submit', {
