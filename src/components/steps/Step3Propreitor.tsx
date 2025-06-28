@@ -3,6 +3,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../store';
 import { setEntityInfoField, setSoleProprietorInfoField } from '../../store/slices/formSlice';
+import { FileUpload } from '../FileUpload';
 
 export const Step3Propreitor: React.FC = () => {
   const { t } = useTranslation();
@@ -48,8 +49,10 @@ export const Step3Propreitor: React.FC = () => {
             )}
           </label>
 
-          <label>
-            <span data-i18n="purpose">{t('purpose')}</span>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t('purpose')}
+            </label>
             <textarea
               name="company_purpose"
               required
@@ -60,37 +63,29 @@ export const Step3Propreitor: React.FC = () => {
             {validationErrors.purpose && (
               <span className="text-red-500 text-sm mt-1">{validationErrors.purpose}</span>
             )}
-          </label>
+          </div>
 
-          <label>
-            <span data-i18n="upload_register">{t('upload_register')}</span>
-            <input
-              type="file"
-              name="register_file"
-              accept=".pdf"
-              required
-              className={`block mt-1 ${getErrorClass('registerFile')}`}
-              onChange={(e) => dispatch(setEntityInfoField({ field: 'registerFile', value: e.target.files?.[0] || null }))}
-            />
-            {validationErrors.registerFile && (
-              <span className="text-red-500 text-sm mt-1">{validationErrors.registerFile}</span>
-            )}
-          </label>
+          <FileUpload
+            label="Commercial Register Extract *"
+            required={true}
+            accept=".pdf,.jpg,.jpeg,.png"
+            maxSize={10 * 1024 * 1024}
+            onFileSelect={(file) => dispatch(setEntityInfoField({ field: 'registerFile', value: file }))}
+            currentFile={entityInfo.registerFile}
+            helpText="Commercial register extract must be less than 12 months old. Acceptable formats: PDF, JPG, PNG (max 10MB)."
+            error={validationErrors.registerFile || undefined}
+          />
 
-          <label>
-            <span data-i18n="upload_articles">{t('upload_articles')}</span>
-            <input
-              type="file"
-              name="articles_file"
-              accept=".pdf"
-              required
-              className={`block mt-1 ${getErrorClass('articlesFile')}`}
-              onChange={(e) => dispatch(setEntityInfoField({ field: 'articlesFile', value: e.target.files?.[0] || null }))}
-            />
-            {validationErrors.articlesFile && (
-              <span className="text-red-500 text-sm mt-1">{validationErrors.articlesFile}</span>
-            )}
-          </label>
+          <FileUpload
+            label="Articles of Association *"
+            required={true}
+            accept=".pdf,.jpg,.jpeg,.png"
+            maxSize={10 * 1024 * 1024}
+            onFileSelect={(file) => dispatch(setEntityInfoField({ field: 'articlesFile', value: file }))}
+            currentFile={entityInfo.articlesFile}
+            helpText="Articles of association/incorporation documents. Acceptable formats: PDF, JPG, PNG (max 10MB)."
+            error={validationErrors.articlesFile || undefined}
+          />
 
           <label>
             <span data-i18n="listed">{t('listed')}</span>

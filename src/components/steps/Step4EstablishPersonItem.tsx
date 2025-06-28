@@ -1,9 +1,11 @@
 import React, { useRef } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { EstablishingPerson } from '../../store/slices/formSlice';
+import { FileUpload } from '../FileUpload';
+
 interface Props {
   person: EstablishingPerson;
-  onChange: (id: string, field: string, value: string) => void;
+  onChange: (id: string, field: string, value: string | File | null) => void;
   onDelete: () => void;
 }
 
@@ -12,9 +14,6 @@ export const Step4EstablishPersonItem: React.FC<Props> = ({
   onChange,
   onDelete,
 }) => {
-  // For file input refs
-  const idDocRef = useRef<HTMLInputElement>(null);
-  const poaRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
 
   return (
@@ -116,43 +115,25 @@ export const Step4EstablishPersonItem: React.FC<Props> = ({
         </select>
       </div>
 
-      <div className="mb-3">
-        <label className="block font-medium mb-1">{t('upload_id')}</label>
-        <label className="flex items-center space-x-2 cursor-pointer">
-          <span className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-            {t('choose_file')}
-          </span>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg"
-            className="hidden"
-            ref={idDocRef}
-            onChange={e => onChange(person.id, 'iddoc', e.target.files?.[0]?.name || '')}
-          />
-          <span className="text-gray-700 truncate max-w-xs">
-            {person.iddoc ? person.iddoc.name : 'No file chosen'}
-          </span>
-        </label>
-      </div>
+      <FileUpload
+        label="Identification Document *"
+        required={true}
+        accept=".pdf,.jpg,.jpeg,.png"
+        maxSize={10 * 1024 * 1024}
+        onFileSelect={(file) => onChange(person.id, 'iddoc', file)}
+        currentFile={person.iddoc}
+        helpText="Upload identification document (passport/ID card). Both sides must be uploaded. Acceptable formats: PDF, JPG, PNG (max 10MB)."
+      />
 
-      <div>
-        <label className="block font-medium mb-1">{t('upload_poa')}</label>
-        <label className="flex items-center space-x-2 cursor-pointer">
-          <span className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-            {t('choose_file')}
-          </span>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg"
-            className="hidden"
-            ref={poaRef}
-            onChange={e => onChange(person.id, 'poa', e.target.files?.[0]?.name || '')}
-          />
-          <span className="text-gray-700 truncate max-w-xs">
-            {person.poa ? person.poa.name : 'No file chosen'}
-          </span>
-        </label>
-      </div>
+      <FileUpload
+        label="Power of Attorney Documentation"
+        required={false}
+        accept=".pdf,.jpg,.jpeg,.png"
+        maxSize={10 * 1024 * 1024}
+        onFileSelect={(file) => onChange(person.id, 'poa', file)}
+        currentFile={person.poa}
+        helpText="Upload power of attorney documentation (if applicable). Acceptable formats: PDF, JPG, PNG (max 10MB)."
+      />
     </div>
   );
 };

@@ -27,7 +27,7 @@ export const Step4EstablishPerson: React.FC = () => {
     }));
   };
 
-  const changePerson = (id: string, field: string, value: string) => {
+  const changePerson = (id: string, field: string, value: string | File | null) => {
     dispatch(updateEstablishingPerson({ index: id, person: { [field]: value } }));
   };
 

@@ -3,6 +3,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { setSanctionsInfoField } from '../../store/slices/formSlice';
+import type { SanctionsInfo } from '../../store/slices/formSlice';
 
 const PEP_POSITIONS = [
   'Head of State or Government',
@@ -17,17 +18,16 @@ const PEP_POSITIONS = [
   'Other'
 ];
 
-const SANCTIONED_COUNTRIES = [
-  'Afghanistan', 'Belarus', 'Central African Republic', 'Cuba', 'Democratic Republic of Congo',
-  'Eritrea', 'Guinea-Bissau', 'Iran', 'Iraq', 'Lebanon', 'Libya', 'Mali', 'Myanmar',
-  'Nicaragua', 'North Korea', 'Russia', 'Somalia', 'South Sudan', 'Sudan', 'Syria',
-  'Venezuela', 'Yemen', 'Zimbabwe'
-];
+const SANCTIONED_COUNTRIES = ['Iran', 'North Korea', 'Syria', 'Cuba', 'Sudan'];
 
 export const Step10Sanctions: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const sanctionsInfo = useSelector((state: RootState) => state.form.sanctionsInfo);
+
+  const handleChange = (field: keyof SanctionsInfo, value: any) => {
+    dispatch(setSanctionsInfoField({ field, value }));
+  };
 
   return (
     <section className="step" data-step="10">
@@ -59,7 +59,7 @@ export const Step10Sanctions: React.FC = () => {
                   type="radio"
                   name="is_pep"
                   value="yes"
-                  onChange={(e) => dispatch(setSanctionsInfoField({ field: 'isPep', value: e.target.value === 'yes' }))}
+                  onChange={(e) => handleChange('isPep', e.target.value === 'yes')}
                   required
                   className="mr-2"
                 />
@@ -71,7 +71,7 @@ export const Step10Sanctions: React.FC = () => {
                   name="is_pep"
                   value="no"
                   checked={!sanctionsInfo.isPep}
-                  onChange={(e) => dispatch(setSanctionsInfoField({ field: 'isPep', value: e.target.value === 'yes' }))}
+                  onChange={(e) => handleChange('isPep', e.target.value === 'yes')}
                   className="mr-2"
                 />
                 <span className="text-sm font-medium">No</span>
@@ -95,7 +95,7 @@ export const Step10Sanctions: React.FC = () => {
                     placeholder="Full name of the PEP"
                     className="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={sanctionsInfo.pepName}
-                    onChange={(e) => dispatch(setSanctionsInfoField({ field: 'pepName', value: e.target.value }))}
+                    onChange={(e) => handleChange('pepName', e.target.value)}
                     required
                   />
                 </div>
@@ -108,7 +108,7 @@ export const Step10Sanctions: React.FC = () => {
                     name="pep_position"
                     className="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={sanctionsInfo.pepPosition}
-                    onChange={(e) => dispatch(setSanctionsInfoField({ field: 'pepPosition', value: e.target.value }))}
+                    onChange={(e) => handleChange('pepPosition', e.target.value)}
                     required
                   >
                     <option value="">Select position</option>
@@ -130,7 +130,7 @@ export const Step10Sanctions: React.FC = () => {
                     placeholder="Country where position was held"
                     className="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={sanctionsInfo.pepCountry}
-                    onChange={(e) => dispatch(setSanctionsInfoField({ field: 'pepCountry', value: e.target.value }))}
+                    onChange={(e) => handleChange('pepCountry', e.target.value)}
                     required
                   />
                 </div>
@@ -145,7 +145,7 @@ export const Step10Sanctions: React.FC = () => {
                     placeholder="e.g., 2015-2020"
                     className="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={sanctionsInfo.pepPeriod}
-                    onChange={(e) => dispatch(setSanctionsInfoField({ field: 'pepPeriod', value: e.target.value }))}
+                    onChange={(e) => handleChange('pepPeriod', e.target.value)}
                     required
                   />
                 </div>
@@ -179,7 +179,7 @@ export const Step10Sanctions: React.FC = () => {
                   name="is_sanctioned"
                   value="yes"
                   checked={sanctionsInfo.isSanctions}
-                  onChange={(e) => dispatch(setSanctionsInfoField({ field: 'isSanctions', value: e.target.value === 'yes' }))}
+                  onChange={(e) => handleChange('isSanctions', e.target.value === 'yes')}
                   className="mr-2"
                 />
                 <span className="text-sm font-medium">Yes</span>
@@ -190,7 +190,7 @@ export const Step10Sanctions: React.FC = () => {
                   name="is_sanctioned"
                   value="no"
                   checked={!sanctionsInfo.isSanctions}
-                  onChange={(e) => dispatch(setSanctionsInfoField({ field: 'isSanctions', value: e.target.value === 'yes' }))}
+                  onChange={(e) => handleChange('isSanctions', e.target.value === 'yes')}
                   className="mr-2"
                 />
                 <span className="text-sm font-medium">No</span>
@@ -214,7 +214,7 @@ export const Step10Sanctions: React.FC = () => {
                     placeholder="Full name of the person"
                     className="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={sanctionsInfo.sanctionsName}
-                    onChange={(e) => dispatch(setSanctionsInfoField({ field: 'sanctionsName', value: e.target.value }))}
+                    onChange={(e) => handleChange('sanctionsName', e.target.value)}
                     required
                   />
                 </div>
@@ -227,7 +227,7 @@ export const Step10Sanctions: React.FC = () => {
                     name="sanction_country"
                     className="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={sanctionsInfo.sanctionsCountry}
-                    onChange={(e) => dispatch(setSanctionsInfoField({ field: 'sanctionsCountry', value: e.target.value }))}
+                    onChange={(e) => handleChange('sanctionsCountry', e.target.value)}
                     required
                   >
                     <option value="">Select country</option>
@@ -249,7 +249,7 @@ export const Step10Sanctions: React.FC = () => {
                     rows={3}
                     className="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={sanctionsInfo.sanctionsNature}
-                    onChange={(e) => dispatch(setSanctionsInfoField({ field: 'sanctionsNature', value: e.target.value }))}
+                    onChange={(e) => handleChange('sanctionsNature', e.target.value)}
                     required
                   />
                 </div>

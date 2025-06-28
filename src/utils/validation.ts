@@ -41,8 +41,10 @@ export const validateDate = (date: string): boolean => {
   return true;
 };
 
-// UID number validation (Swiss Commercial Registry Number)
+// Enhanced UID number validation (Swiss Commercial Registry Number)
 export const validateUID = (uid: string): boolean => {
+  if (!uid) return true; // UID is optional for some entity types
+  
   // Swiss UID format: CHE-XXX.XXX.XXX (where X are digits)
   const uidRegex = /^CHE-\d{3}\.\d{3}\.\d{3}$/;
   return uidRegex.test(uid);
@@ -75,68 +77,83 @@ export const validatePositiveNumber = (value: string | number): boolean => {
   return !isNaN(num) && isFinite(num) && num > 0;
 };
 
-// File validation
-export const validateFile = (file: File | null, maxSize: number = 10 * 1024 * 1024): boolean => {
-  if (!file) return false;
+// Enhanced file validation for compliance requirements
+export const validateFile = (file: File | null, maxSize: number = 10 * 1024 * 1024): string | null => {
+  if (!file) return null; // File is optional unless required
   
   // Check file size (default 10MB)
-  if (file.size > maxSize) return false;
+  if (file.size > maxSize) {
+    return `File size must be less than ${Math.round(maxSize / (1024 * 1024))}MB`;
+  }
   
   // Check file type
   const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-  return allowedTypes.includes(file.type);
+  if (!allowedTypes.includes(file.type)) {
+    return 'Only PDF, JPG, and PNG files are allowed';
+  }
+  
+  return null;
 };
 
-// Swiss canton validation
-export const validateSwissCanton = (canton: string): boolean => {
-  const swissCantons = [
-    'AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR',
-    'JU', 'LU', 'NE', 'NW', 'OW', 'SG', 'SH', 'SO', 'SZ', 'TG',
-    'TI', 'UR', 'VD', 'VS', 'ZG', 'ZH'
+// Enhanced commercial register extract validation
+export const validateCommercialRegisterExtract = (file: File | null): string | null => {
+  const basicValidation = validateFile(file);
+  if (basicValidation) return basicValidation;
+  
+  if (!file) return 'Commercial register extract is required';
+  
+  // Additional validation for commercial register extracts
+  // Note: In a real implementation, you might want to check the content
+  // or metadata of the PDF to verify it's actually a commercial register extract
+  
+  return null;
+};
+
+// Enhanced articles of association validation
+export const validateArticlesOfAssociation = (file: File | null): string | null => {
+  const basicValidation = validateFile(file);
+  if (basicValidation) return basicValidation;
+  
+  if (!file) return 'Articles of association are required';
+  
+  return null;
+};
+
+// Enhanced ID document validation
+export const validateIDDocument = (file: File | null): string | null => {
+  const basicValidation = validateFile(file);
+  if (basicValidation) return basicValidation;
+  
+  if (!file) return 'ID document is required';
+  
+  // Additional validation for ID documents
+  // Note: In a real implementation, you might want to check image quality
+  // or verify that both sides are uploaded
+  
+  return null;
+};
+
+// Enhanced industry validation
+export const validateIndustry = (industry: string): string | null => {
+  if (!validateRequired(industry)) return 'Industry/Sector is required';
+  
+  const allowedIndustries = [
+    'payment_service_provider',
+    'commercial_acquirer', 
+    'event_organizer',
+    'media_house',
+    'online_publisher',
+    'other'
   ];
-  return swissCantons.includes(canton.toUpperCase());
-};
-
-// Nationality validation (basic check for common nationalities)
-export const validateNationality = (nationality: string): boolean => {
-  const commonNationalities = [
-    'Swiss', 'German', 'French', 'Italian', 'Austrian', 'American', 'British',
-    'Canadian', 'Australian', 'Chinese', 'Indian', 'Brazilian', 'Russian',
-    'Japanese', 'Korean', 'Spanish', 'Portuguese', 'Dutch', 'Belgian',
-    'Swedish', 'Norwegian', 'Danish', 'Finnish', 'Polish', 'Czech',
-    'Hungarian', 'Slovak', 'Slovenian', 'Croatian', 'Serbian', 'Bulgarian',
-    'Romanian', 'Greek', 'Turkish', 'Ukrainian', 'Belarusian', 'Moldovan',
-    'Georgian', 'Armenian', 'Azerbaijani', 'Kazakh', 'Uzbek', 'Kyrgyz',
-    'Tajik', 'Turkmen', 'Mongolian', 'Vietnamese', 'Thai', 'Malaysian',
-    'Indonesian', 'Filipino', 'Pakistani', 'Bangladeshi', 'Sri Lankan',
-    'Nepali', 'Bhutanese', 'Myanmar', 'Cambodian', 'Laotian', 'Bruneian',
-    'Timorese', 'Papua New Guinean', 'Fijian', 'Vanuatuan', 'Solomon Islander',
-    'Samoan', 'Tongan', 'Kiribati', 'Tuvaluan', 'Nauruan', 'Palauan',
-    'Marshallese', 'Micronesian'
-  ];
-  return commonNationalities.some(nat => 
-    nationality.toLowerCase().includes(nat.toLowerCase())
-  ) || nationality.length >= 2;
-};
-
-// Business volume validation
-export const validateBusinessVolume = (volume: number): boolean => {
-  return volume >= 0 && volume <= 1000000000; // Max 1 billion CHF
-};
-
-// Date range validation (for periods)
-export const validateDateRange = (startDate: string, endDate: string): boolean => {
-  if (!startDate || !endDate) return false;
   
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  if (!allowedIndustries.includes(industry)) {
+    return 'Please select a valid industry from the list';
+  }
   
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
-  
-  return start <= end;
+  return null;
 };
 
-// Comprehensive form validation
+// Enhanced comprehensive form validation
 export const validateFormField = (fieldName: string, value: any, additionalData?: any): string | null => {
   switch (fieldName) {
     case 'email':
@@ -167,6 +184,9 @@ export const validateFormField = (fieldName: string, value: any, additionalData?
         return 'Please enter a valid UID number (format: CHE-XXX.XXX.XXX)';
       }
       break;
+      
+    case 'industry':
+      return validateIndustry(value);
       
     case 'dob':
     case 'ownerDob':
@@ -202,66 +222,36 @@ export const validateFormField = (fieldName: string, value: any, additionalData?
       if (!validateMinimumLength(value, 5)) return 'Address must be at least 5 characters long';
       break;
       
-    case 'city':
-      if (!validateRequired(value)) return 'City is required';
-      if (!validateMinimumLength(value, 2)) return 'City must be at least 2 characters long';
-      break;
+    case 'registerFile':
+      return validateCommercialRegisterExtract(value);
       
-    case 'industry':
-      if (!validateRequired(value)) return 'Industry is required';
-      break;
+    case 'articlesFile':
+      return validateArticlesOfAssociation(value);
+      
+    case 'iddoc':
+      return validateIDDocument(value);
       
     case 'purpose':
       if (!validateRequired(value)) return 'Company purpose is required';
-      if (!validateMinimumLength(value, 10)) return 'Purpose must be at least 10 characters long';
+      if (!validateMinimumLength(value, 10)) return 'Company purpose must be at least 10 characters long';
       break;
       
-    case 'professionActivity':
-    case 'businessDescription':
-    case 'targetClients':
-      if (!validateRequired(value)) return 'This field is required';
-      if (!validateMinimumLength(value, 10)) return 'Please provide more detailed information (at least 10 characters)';
+    case 'isListed':
+      if (!validateRequired(value)) return 'Please indicate if the company is listed';
+      if (!['yes', 'no'].includes(value)) return 'Please select Yes or No';
       break;
       
-    case 'mainCountries':
-      if (!Array.isArray(value) || value.length === 0) {
-        return 'Please select at least one country';
-      }
-      break;
-      
-    case 'establishingPersons':
-      if (!Array.isArray(value) || value.length === 0) {
-        return 'At least one establishing person is required';
-      }
-      break;
-      
-    case 'beneficialOwners':
-      if (additionalData?.isSoleOwner === false) {
-        if (!Array.isArray(value) || value.length === 0) {
-          return 'At least one beneficial owner is required when not sole owner';
-        }
-      }
-      break;
-      
-    case 'termsInfo':
-      if (!value.agreePrivacy) return 'You must accept the Privacy Policy';
-      if (!value.agreeTerms) return 'You must accept the Terms and Conditions';
-      if (!value.confirmTruth) return 'You must confirm the truthfulness of your information';
-      break;
-      
-    case 'verificationMethod':
-      if (!validateRequired(value)) return 'Please select a verification method';
-      break;
-      
-    case 'videoDate':
-      if (additionalData?.verificationMethod === 'video') {
-        if (!validateRequired(value)) return 'Please select a preferred date for video identification';
-        if (!validateDate(value)) return 'Please select a valid date';
+    case 'exchangeName':
+      if (additionalData?.isListed === 'yes' && !validateRequired(value)) {
+        return 'Exchange name is required when company is listed';
       }
       break;
       
     default:
-      if (!validateRequired(value)) return 'This field is required';
+      // For any other field, just check if it's required
+      if (additionalData?.required && !validateRequired(value)) {
+        return 'This field is required';
+      }
       break;
   }
   
@@ -384,4 +374,41 @@ export const formatValidationError = (fieldName: string, error: string): string 
   
   const label = fieldLabels[fieldName] || fieldName;
   return `${label}: ${error}`;
+};
+
+// Enhanced Swiss canton validation
+export const validateSwissCanton = (canton: string): boolean => {
+  const swissCantons = [
+    'AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR',
+    'JU', 'LU', 'NE', 'NW', 'OW', 'SG', 'SH', 'SO', 'SZ', 'TG',
+    'TI', 'UR', 'VD', 'VS', 'ZG', 'ZH'
+  ];
+  return swissCantons.includes(canton.toUpperCase());
+};
+
+// Nationality validation (basic check for common nationalities)
+export const validateNationality = (nationality: string): boolean => {
+  const commonNationalities = [
+    'Swiss', 'German', 'French', 'Italian', 'Austrian', 'American', 'British',
+    'Canadian', 'Australian', 'Chinese', 'Indian', 'Brazilian', 'Russian',
+    'Japanese', 'Korean', 'Spanish', 'Portuguese', 'Dutch', 'Belgian',
+    'Swedish', 'Norwegian', 'Danish', 'Finnish', 'Polish', 'Czech',
+    'Hungarian', 'Slovak', 'Slovenian', 'Croatian', 'Serbian', 'Bulgarian',
+    'Romanian', 'Greek', 'Turkish', 'Ukrainian', 'Belarusian', 'Moldovan',
+    'Georgian', 'Armenian', 'Azerbaijani', 'Kazakh', 'Uzbek', 'Kyrgyz',
+    'Tajik', 'Turkmen', 'Mongolian', 'Vietnamese', 'Thai', 'Malaysian',
+    'Indonesian', 'Filipino', 'Pakistani', 'Bangladeshi', 'Sri Lankan',
+    'Nepali', 'Bhutanese', 'Myanmar', 'Cambodian', 'Laotian', 'Bruneian',
+    'Timorese', 'Papua New Guinean', 'Fijian', 'Vanuatuan', 'Solomon Islander',
+    'Samoan', 'Tongan', 'Kiribati', 'Tuvaluan', 'Nauruan', 'Palauan',
+    'Marshallese', 'Micronesian'
+  ];
+  return commonNationalities.some(nat => 
+    nationality.toLowerCase().includes(nat.toLowerCase())
+  ) || nationality.length >= 2;
+};
+
+// Business volume validation
+export const validateBusinessVolume = (volume: number): boolean => {
+  return volume >= 0 && volume <= 1000000000; // Max 1 billion CHF
 };

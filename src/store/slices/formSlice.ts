@@ -118,6 +118,9 @@ export interface TransactionInfo {
 
 export interface SanctionsInfo {
   isPep: boolean;
+  pepType: 'domestic' | 'foreign' | 'international' | '';
+  hasPepRelationship: boolean;
+  sanctionedCountries: string[];
   pepName: string;
   pepPosition: string;
   pepCountry: string;
@@ -246,6 +249,9 @@ const initialState: FormState = {
   },
   sanctionsInfo: {
     isPep: false,
+    pepType: '',
+    hasPepRelationship: false,
+    sanctionedCountries: [],
     pepName: '',
     pepPosition: '',
     pepCountry: '',
