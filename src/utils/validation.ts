@@ -408,7 +408,6 @@ export const validateNationality = (nationality: string): boolean => {
   ) || nationality.length >= 2;
 };
 
-// Business volume validation
 export const validateBusinessVolume = (volume: number): boolean => {
-  return volume >= 0 && volume <= 1000000000; // Max 1 billion CHF
+  return volume >= 0 && volume <= 1000000000;
 };

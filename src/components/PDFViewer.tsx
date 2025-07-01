@@ -9,9 +9,7 @@ interface PDFViewerProps {
 export const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl, className = '', children }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Get the base URL from the current window location
     const baseUrl = window.location.origin;
-    // Construct the full URL
     const fullUrl = `${baseUrl}${pdfUrl}`;
     window.open(fullUrl, '_blank');
   };

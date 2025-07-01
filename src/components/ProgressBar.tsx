@@ -5,7 +5,6 @@ import type { RootState } from "../store";
 export const ProgressBar: React.FC = () => {
   const { currentStep } = useSelector((state: RootState) => state.form);
   
-  // Ensure progress is always a valid number to prevent style errors
   const progress = (typeof currentStep === 'number' && currentStep > 0) ? (currentStep / 14) * 100 : 0;
 
   return (

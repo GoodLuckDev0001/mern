@@ -300,7 +300,6 @@ const formSlice = createSlice({
     },
     setCompanyInfoField: (state, action: PayloadAction<{ field: keyof CompanyInfo, value: string }>) => {
       state.companyInfo[action.payload.field] = action.payload.value;
-      // Clear validation error when field is updated
       if (state.validationErrors[action.payload.field]) {
         delete state.validationErrors[action.payload.field];
       }

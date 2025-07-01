@@ -4,7 +4,7 @@ interface FileUploadProps {
   label: string;
   required?: boolean;
   accept?: string;
-  maxSize?: number; // in bytes
+  maxSize?: number;
   onFileSelect: (file: File | null) => void;
   currentFile?: File | null;
   helpText?: string;
@@ -16,7 +16,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   label,
   required = false,
   accept = '.pdf,.jpg,.jpeg,.png',
-  maxSize = 10 * 1024 * 1024, // 10MB default
+  maxSize = 10 * 1024 * 1024,
   onFileSelect,
   currentFile,
   helpText,
@@ -27,12 +27,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const [dragActive, setDragActive] = useState(false);
 
   const validateFile = (file: File): string | null => {
-    // Check file size
+  
     if (file.size > maxSize) {
       return `File size must be less than ${Math.round(maxSize / (1024 * 1024))}MB`;
     }
 
-    // Check file type
     const allowedTypes = accept.split(',').map(type => type.trim());
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     const fileType = file.type;

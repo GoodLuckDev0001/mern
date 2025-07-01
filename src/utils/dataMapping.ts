@@ -1,7 +1,6 @@
 import type { RootState } from '../store';
 
 export interface VQFMappingData {
-  // Form 902.1e (Identification)
   identification: {
     customerName: string;
     customerType: string;
@@ -20,7 +19,6 @@ export interface VQFMappingData {
     ownerAddress?: string;
   };
 
-  // Form 902.4e (Risk Profile)
   riskProfile: {
     foreignPEP: boolean;
     domesticPEP: boolean;
@@ -29,7 +27,6 @@ export interface VQFMappingData {
     decisionDate: string;
   };
 
-  // Form 902.5e (Customer Profile)
   customerProfile: {
     businessActivity: string;
     industry: string;
@@ -39,7 +36,6 @@ export interface VQFMappingData {
     riskLevel: string;
   };
 
-  // Form 902.9e (Form-A)
   formA: {
     establishingPersons: Array<{
       name: string;
@@ -73,7 +69,6 @@ export interface VQFMappingData {
     }>;
   };
 
-  // Form 902.11e (Form-K)
   formK: {
     financialInformation: {
       annualRevenue: string;
@@ -89,7 +84,6 @@ export interface VQFMappingData {
     };
   };
 
-  // Additional metadata
   metadata: {
     submissionDate: string;
     vqfMemberNumber: string;
@@ -103,7 +97,7 @@ export class VQFDataMapper {
   private static formatDate(dateString: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB'); // DD/MM/YYYY format
+    return date.toLocaleDateString('en-GB');
   }
 
   private static formatCurrency(amount: string): string {
@@ -164,12 +158,10 @@ export class VQFDataMapper {
       additionalInfo
     } = formData;
 
-    // Determine customer name based on client type
     const customerName = clientType.includes('sole') 
       ? soleProprietorInfo.ownerName 
       : companyInfo.name;
 
-    // Determine address based on client type
     const address = clientType.includes('sole')
       ? soleProprietorInfo.ownerAddress
       : companyInfo.address;
@@ -269,9 +261,9 @@ export class VQFDataMapper {
 
       metadata: {
         submissionDate: this.formatDate(new Date().toISOString()),
-        vqfMemberNumber: '100809', // Centi's VQF member number
-        amlaFileNumber: '', // Will be assigned by compliance
-        completedBy: 'Bernhard Frank Müller Hug', // Compliance officer
+        vqfMemberNumber: '100809',
+        amlaFileNumber: '',
+        completedBy: 'Bernhard Frank Müller Hug',
         language: 'en'
       }
     };
@@ -280,9 +272,7 @@ export class VQFDataMapper {
   public static generateDocumentData(formData: RootState['form']): Record<string, any> {
     const vqfData = this.mapFormDataToVQF(formData);
     
-    // Flatten the data structure for docxtemplater
     return {
-      // Identification form fields
       customerName: vqfData.identification.customerName,
       customerType: vqfData.identification.customerType,
       uid: vqfData.identification.uid,
@@ -299,14 +289,12 @@ export class VQFDataMapper {
       ownerNationality: vqfData.identification.ownerNationality,
       ownerAddress: vqfData.identification.ownerAddress,
 
-      // Risk profile fields
       foreignPEP: vqfData.riskProfile.foreignPEP ? 'Yes' : 'No',
       domesticPEP: vqfData.riskProfile.domesticPEP ? 'Yes' : 'No',
       highRiskCountry: vqfData.riskProfile.highRiskCountry ? 'Yes' : 'No',
       seniorExecutiveDecision: vqfData.riskProfile.seniorExecutiveDecision,
       decisionDate: vqfData.riskProfile.decisionDate,
 
-      // Customer profile fields
       businessActivity: vqfData.customerProfile.businessActivity,
       industry: vqfData.customerProfile.industry,
       expectedTransactions: vqfData.customerProfile.expectedTransactions,
@@ -314,12 +302,10 @@ export class VQFDataMapper {
       sourceOfFunds: vqfData.customerProfile.sourceOfFunds,
       riskLevel: vqfData.customerProfile.riskLevel,
 
-      // Arrays for loops in templates
       establishingPersons: vqfData.formA.establishingPersons,
       controllingPersons: vqfData.formA.controllingPersons,
       beneficialOwners: vqfData.formA.beneficialOwners,
 
-      // Metadata
       submissionDate: vqfData.metadata.submissionDate,
       vqfMemberNumber: vqfData.metadata.vqfMemberNumber,
       amlaFileNumber: vqfData.metadata.amlaFileNumber,
@@ -331,7 +317,6 @@ export class VQFDataMapper {
   public static validateVQFData(vqfData: VQFMappingData): string[] {
     const errors: string[] = [];
 
-    // Required fields validation
     if (!vqfData.identification.customerName) {
       errors.push('Customer name is required');
     }
@@ -348,7 +333,6 @@ export class VQFDataMapper {
       errors.push('At least one establishing person is required');
     }
 
-    // Business logic validation
     if (vqfData.riskProfile.foreignPEP && !vqfData.riskProfile.seniorExecutiveDecision) {
       errors.push('Senior executive decision is required for foreign PEP relationships');
     }

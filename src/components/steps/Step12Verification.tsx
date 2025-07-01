@@ -41,7 +41,6 @@ export const Step12Verification: React.FC = () => {
 
   const handleMethodChange = (method: string) => {
     dispatch(setVerificationInfoField({ field: 'verificationMethod', value: method }));
-    // Reset date and time when method changes
     if (method !== 'video') {
       dispatch(setVerificationInfoField({ field: 'videoDate', value: '' }));
       setSelectedTime('');
@@ -58,7 +57,7 @@ export const Step12Verification: React.FC = () => {
   const getMaxDate = () => {
     const today = new Date();
     const maxDate = new Date(today);
-    maxDate.setDate(today.getDate() + 30); // 30 days from now
+    maxDate.setDate(today.getDate() + 30);
     return maxDate.toISOString().split('T')[0];
   };
 
@@ -67,7 +66,6 @@ export const Step12Verification: React.FC = () => {
       <h2 className="text-xl font-semibold mb-6" data-i18n="step12_title">12. Verification Method</h2>
 
       <div className="space-y-6">
-        {/* Verification Method Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-4" data-i18n="verification_method">
             {t('verification_method')} *

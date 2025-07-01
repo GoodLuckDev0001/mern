@@ -4,7 +4,6 @@ import { ProgressBar } from './ProgressBar';
 import { Steps } from './Steps';
 import { PDFViewer } from './PDFViewer';
 import { FileUpload } from './FileUpload';
-import { DocumentGenerationStep } from './DocumentGenerationStep';
 
 export {
   Header,
@@ -13,5 +12,4 @@ export {
   Steps,
   PDFViewer,
   FileUpload,
-  DocumentGenerationStep,
 }

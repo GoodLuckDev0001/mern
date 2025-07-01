@@ -1,27 +1,10 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import toast from 'react-hot-toast';
 import type { RootState } from '../../store';
 import { setCurrentStep } from '../../store/slices/formSlice';
 import { useTranslation } from '../../hooks/useTranslation';
+import { getTemplatesToGenerate } from '../../utils/templateSelector';
 
-// Mapping function for risk profile template
-function mapRiskProfileToPlaceholders(riskProfile: any) {
-  // Update these mappings to match the actual placeholders in your 902.4e DOCX
-  return {
-    Text1: riskProfile.clientName, // e.g., Full name
-    Text2: riskProfile.position,   // e.g., Position or title
-    Text7: riskProfile.riskSummary, // e.g., Risk summary or notes
-    Text8: riskProfile.date,       // e.g., Date of assessment
-    Text10: riskProfile.assessor,  // e.g., Name of assessor
-    Kontrollkästchen1: riskProfile.isForeignPEP ? 'true' : 'false',
-    Kontrollkästchen2: riskProfile.isDomesticPEP ? 'true' : 'false',
-    // Add more mappings as needed based on your extracted placeholders
-  };
-}
-
-// Example high-risk country list (should be replaced with your real list)
-const HIGH_RISK_COUNTRIES = ['North Korea', 'Iran', 'Syria', 'Cuba', 'Sudan'];
 
 type RiskIndicator = {
   key: string;
@@ -61,7 +44,6 @@ function getRiskIndicators(formState: any): { isHighRisk: boolean; indicators: R
       label: 'Complex ownership structure (multiple beneficial owners)',
       triggered: (formState.beneficialInfo?.beneficialOwners?.length || 0) > 1,
     },
-    // Add more indicators as needed
   ];
   const isHighRisk = indicators.some(ind => ind.triggered);
   return { isHighRisk, indicators };
@@ -71,6 +53,7 @@ export const Step14Review: React.FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const formState = useSelector((state: RootState) => state.form);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -80,97 +63,42 @@ export const Step14Review: React.FC = () => {
 
   const { isHighRisk, indicators } = getRiskIndicators(formState);
 
+  const requiredTemplates = getTemplatesToGenerate(formState);
+
+  const templateNames: Record<string, string> = {
+    '902.1e': 'Identification Form',
+    '902.4e': 'Risk Profile',
+    '902.5e': 'Customer Profile',
+    '902.9e': 'Form-A (Beneficial Ownership)',
+    '902.11e': 'Form-K (Controlling Persons)'
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    // Decide which templates to generate
-    const templatesToGenerate = ['902.1e'];
-    if (isHighRisk) {
-      templatesToGenerate.push('902.4e');
-    }
-
-    for (const templateId of templatesToGenerate) {
-      const formData = new FormData();
-      formData.append('template', templateId);
-      if (templateId === '902.4e') {
-        const riskData = mapRiskProfileToPlaceholders(formState.riskProfile);
-        console.log('Mapped risk profile data for 902.4e:', riskData); // Debug log
-        Object.entries(riskData).forEach(([key, value]) => {
-          formData.append(key, value);
-        });
-      } else if (templateId === '902.1e') {
-        // Add your mapping for 902.1e here (as you already do)
-        const today = new Date();
-        const formattedDate = `${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()}`;
-        formData.append('5', formattedDate);
-        formData.append('6', formState.companyInfo.name);
-        formData.append('7', formState.companyInfo.address);
-        formData.append('8', formState.companyInfo.phone);
-        formData.append('9', formState.companyInfo.email);
-        formData.append('10', '  ');
-        formData.append('11', ' ');
-        formData.append('12', ' ');
-        formData.append('12:1', formState.entityInfo.registerFile === null ? 'false' : 'true');
-        formData.append('13', formState.companyInfo.name);
-        formData.append('14', formState.companyInfo.address);
-        formData.append('15', ' ');
-        formData.append('15:1', formState.entityInfo.articlesFile === null ? 'false' : 'true');
-        formData.append('16', formState.companyInfo.name);
-        formData.append('17', formState.companyInfo.canton + ' ' + formState.companyInfo.city + ' ' + formState.companyInfo.address + ' ' + formState.companyInfo.postal);
-        formData.append('18', ' ');
-        formData.append('19', formState.companyInfo.phone);
-        formData.append('20', formState.companyInfo.email);
-        formData.append('21', ' ');
-        formData.append('23', formState.establishingPersons[0].name);
-        formData.append('24', formState.establishingPersons[0].address);
-        formData.append('25', formState.establishingPersons[0].dob);
-        formData.append('26', formState.establishingPersons[0].nationality);
-        formData.append('27', formState.establishingPersons[0].toa);
-        formData.append('28', formState.establishingPersons[0].iddoc === null ? 'false' : 'true');
-        formData.append('29', ' ');
-        formData.append('29:1', 'false');
-        formData.append('29:2', 'false');
-        formData.append('29:3', formState.establishingPersons[0].poa === null ? 'false' : 'true');
-        formData.append('31', ' ');
-        formData.append('31:1', 'false');
-        formData.append('31:2', 'true');
-        formData.append('31:3', 'false');
-        formData.append('31:4', 'false');
-        formData.append('32', ' ');
-        formData.append('32:1', 'false');
-        formData.append('32:2', 'false');
-        formData.append('32:3', 'false');
-        formData.append('32:4', 'true');
-        formData.append('34', 'No information');
-        formData.append('35:5', 'false');
-        formData.append('35:1', 'true');
-        formData.append('35:2', 'false');
-        formData.append('35:3', 'false');
-        formData.append('35:4', 'false');
-        formData.append('36', 'false');
-        formData.append('39', formState.transactionInfo.businessPurposes[0]);
-      }
-      try {
+    try {
+      console.log(requiredTemplates);
+      for (const templateId of requiredTemplates) {
         const response = await fetch('/api/submit', {
           method: 'POST',
-          body: formData,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            template: templateId,
+            ...formState
+          })
         });
-        if (response.ok) {
-          setSubmitStatus('success');
-          toast.success(`PDF for template ${templateId} generated successfully!`);
-        } else {
+        if (!response.ok) {
           const errorData = await response.json();
-          toast.error(errorData.message || `Error generating PDF for template ${templateId}.`);
-          setSubmitStatus('error');
+          throw new Error(errorData.error || 'Submission failed');
         }
-      } catch (error) {
-        toast.error(`Unexpected error generating PDF for template ${templateId}.`);
-        setSubmitStatus('error');
       }
+    } catch (error) {
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   const renderSection = (title: string, step: number, content: React.ReactNode) => (
@@ -322,6 +250,17 @@ export const Step14Review: React.FC = () => {
       ) : (
         <p className="text-green-600 font-bold">This client is NOT high risk.</p>
       )}
+
+      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h3 className="text-lg font-medium text-blue-800 mb-2">
+          Required Documents for Submission
+        </h3>
+        <ul className="list-disc list-inside text-blue-700">
+          {requiredTemplates.map((templateId) => (
+            <li key={templateId}>{templateNames[templateId] || templateId}</li>
+          ))}
+        </ul>
+      </div>
 
       <div className="mt-6">
         <button
